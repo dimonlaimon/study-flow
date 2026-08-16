@@ -6,7 +6,7 @@ import ScheduleCard from '@/components/schedule/ScheduleCard';
 import WeekNavigator from '@/components/schedule/WeekNavigator';
 
 const GROUP_ID = 42238;
-const API_URL = 'https://ruz.spbstu.ru/api/v1/ruz/scheduler';
+const API_URL = 'https://ruz.spbstu.ru/api/v1/ruz/scheduler/45221';
 
 const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
