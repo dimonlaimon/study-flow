@@ -8,7 +8,7 @@ import WeekNavigator from '@/components/schedule/WeekNavigator';
 const GROUP_ID = 42238;
 const API_URL = 'https://ruz.spbstu.ru/api/v1/ruz/scheduler';
 
-const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
 export default function Schedule() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
@@ -62,7 +62,7 @@ export default function Schedule() {
       />
 
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
-        {[1, 2, 3, 4, 5, 6].map(wd => {
+        {[1, 2, 3, 4, 5, 6, 7].map(wd => {
           const dayData = days.find(d => d.weekday === wd);
           const hasLessons = dayData && dayData.lessons.length > 0;
           const dayDate = dayData ? parseISO(dayData.date) : null;
