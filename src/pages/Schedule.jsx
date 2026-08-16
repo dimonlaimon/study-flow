@@ -5,7 +5,7 @@ import { Loader2, CalendarX } from 'lucide-react';
 import ScheduleCard from '@/components/schedule/ScheduleCard';
 import WeekNavigator from '@/components/schedule/WeekNavigator';
 
-const GROUP_ID = 42238;
+const GROUP_ID = 45221;
 const API_URL = 'https://ruz.spbstu.ru/api/v1/ruz/scheduler/45221';
 
 const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
