@@ -57,7 +57,7 @@ export default function Notes({ user }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold tracking-tight">Мои заметки</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Видны только вам</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Видны только вам. ВНИМАНИЕ! Заметки не хранятся в базе данных, они есть только на вашем устройстве. Поэтому при очистке кэша мини приложения и ВК, заметки безвозвратно стираются!</p>
         </div>
         {!showForm && !editingNote && (
           <Button size="sm" onClick={() => setShowForm(true)} className="rounded-full">
