@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Save } from 'lucide-react';
+import { format } from 'date-fns';
 
-export default function DeadlineForm({ onSubmit, onCancel }) {
+export default function DeadlineForm({ onSubmit, onCancel, deadline }) {
+  const isEdit = !!deadline;
   const [form, setForm] = useState({
-    title: '', description: '', subject: '', due_date: ''
+    title: deadline?.title || '',
+    description: deadline?.description || '',
+    subject: deadline?.subject || '',
+    due_date: deadline?.due_date ? format(new Date(deadline.due_date), "yyyy-MM-dd'T'HH:mm") : ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +30,7 @@ export default function DeadlineForm({ onSubmit, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="rounded-xl border bg-white p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm">Новый дедлайн</h3>
+        <h3 className="font-semibold text-sm">{isEdit ? 'Редактировать дедлайн' : 'Новый дедлайн'}</h3>
         <Button type="button" variant="ghost" size="icon" onClick={onCancel} className="h-7 w-7">
           <X className="w-4 h-4" />
         </Button>
@@ -70,8 +75,8 @@ export default function DeadlineForm({ onSubmit, onCancel }) {
         </div>
       </div>
       <Button type="submit" disabled={loading || !form.title || !form.due_date} className="w-full">
-        <Plus className="w-4 h-4 mr-2" />
-        {loading ? 'Добавление...' : 'Добавить дедлайн'}
+        {isEdit ? <Save className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+        {loading ? (isEdit ? 'Сохранение...' : 'Добавление...') : (isEdit ? 'Сохранить' : 'Добавить дедлайн')}
       </Button>
     </form>
   );
