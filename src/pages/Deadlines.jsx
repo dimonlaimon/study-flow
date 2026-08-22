@@ -10,6 +10,7 @@ export default function Deadlines({ user }) {
   const [deadlines, setDeadlines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingDeadline, setEditingDeadline] = useState(null);
   const { toast } = useToast();
 
   const isStarosta = user?.role === 'starosta' || user?.role === 'admin';
@@ -47,6 +48,22 @@ export default function Deadlines({ user }) {
     loadDeadlines();
   };
 
+  const handleEdit = async (data) => {
+    const { error } = await supabase.from('deadlines').update({
+      title: data.title,
+      description: data.description || null,
+      subject: data.subject || null,
+      due_date: data.due_date
+    }).eq('id', editingDeadline.id);
+    if (error) {
+      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setEditingDeadline(null);
+    toast({ title: 'Дедлайн обновлён' });
+    loadDeadlines();
+  };
+
   const handleDelete = async (id) => {
     const { error } = await supabase.from('deadlines').delete().eq('id', id);
     if (error) {
@@ -65,17 +82,28 @@ export default function Deadlines({ user }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold tracking-tight">Дедлайны</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{upcoming.length} активных</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {upcoming.length} активных
+          </p>
         </div>
-        {isStarosta && !showForm && (
+        {isStarosta && !showForm && !editingDeadline && (
           <Button size="sm" onClick={() => setShowForm(true)} className="rounded-full">
-            <Plus className="w-4 h-4 mr-1" />Добавить
+            <Plus className="w-4 h-4 mr-1" />
+            Добавить
           </Button>
         )}
       </div>
 
       {showForm && (
         <DeadlineForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
+      )}
+
+      {editingDeadline && (
+        <DeadlineForm
+          deadline={editingDeadline}
+          onSubmit={handleEdit}
+          onCancel={() => setEditingDeadline(null)}
+        />
       )}
 
       {loading ? (
@@ -96,7 +124,14 @@ export default function Deadlines({ user }) {
             <div className="space-y-2.5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Предстоящие</h2>
               {upcoming.map(d => (
-                <DeadlineCard key={d.id} deadline={d} canDelete={isStarosta} onDelete={handleDelete} />
+                <DeadlineCard
+                  key={d.id}
+                  deadline={d}
+                  canDelete={isStarosta}
+                  canEdit={isStarosta}
+                  onDelete={handleDelete}
+                  onEdit={setEditingDeadline}
+                />
               ))}
             </div>
           )}
@@ -104,7 +139,14 @@ export default function Deadlines({ user }) {
             <div className="space-y-2.5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Прошедшие</h2>
               {past.map(d => (
-                <DeadlineCard key={d.id} deadline={d} canDelete={isStarosta} onDelete={handleDelete} />
+                <DeadlineCard
+                  key={d.id}
+                  deadline={d}
+                  canDelete={isStarosta}
+                  canEdit={isStarosta}
+                  onDelete={handleDelete}
+                  onEdit={setEditingDeadline}
+                />
               ))}
             </div>
           )}
