@@ -33,6 +33,8 @@ export default function ScheduleCard({ lesson }) {
             <span className="text-xs font-semibold uppercase tracking-wide opacity-80">{typeName}</span>
           </div>
           <h3 className="font-semibold text-sm leading-snug text-foreground break-words">
+            {lesson.subject}
+          </h3>
         </div>
         <div className="flex items-center gap-1.5 text-xs font-medium shrink-0 bg-white/60 rounded-lg px-2.5 py-1.5">
           <Clock className="w-3.5 h-3.5" />
