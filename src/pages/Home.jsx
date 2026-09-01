@@ -5,6 +5,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import Schedule from '@/pages/Schedule';
 import Deadlines from '@/pages/Deadlines';
 import Notes from '@/pages/Notes';
+import Birthdays from '@/pages/Birthdays';
 import SettingsTab from '@/pages/SettingsTab';
 
 export default function Home() {
@@ -25,6 +26,7 @@ export default function Home() {
         {tab === 'schedule' && <Schedule />}
         {tab === 'deadlines' && <Deadlines user={user} />}
         {tab === 'notes' && <Notes user={user} />}
+        {tab === 'birthdays' && <Birthdays />}
         {tab === 'settings' && <SettingsTab user={user} />}
       </div>
       <BottomNav active={tab} onChange={setTab} />
