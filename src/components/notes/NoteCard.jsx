@@ -17,9 +17,9 @@ export default function NoteCard({ note, onEdit, onDelete }) {
 
   return (
     <div className={`rounded-xl border p-4 ${style} transition-all hover:shadow-md`}>
-      <h3 className="font-semibold text-sm mb-1 truncate">{note.title}</h3>
+      <h3 className="font-semibold text-sm mb-1 break-words">{note.title}</h3>
       {note.content && (
-        <p className="text-xs text-muted-foreground line-clamp-4 whitespace-pre-wrap">{note.content}</p>
+        <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words">{note.content}</p>
       )}
       <div className="mt-3 flex items-center justify-between">
         <span className="text-xs text-muted-foreground">
