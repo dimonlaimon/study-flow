@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { format, startOfWeek, addWeeks, subWeeks, isToday, parseISO } from 'date-fns';
+import { format, startOfWeek, addWeeks, subWeeks, addDays, isToday, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Loader2, CalendarX } from 'lucide-react';
 import ScheduleCard from '@/components/schedule/ScheduleCard';
@@ -43,9 +43,9 @@ export default function Schedule() {
   const handleToday = () => {
     const today = new Date();
     setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-    // getDay: 0=вс, 1=пн, … 6=сб. API использует weekday 1–6 для пн–сб.
+    // getDay: 0=вс, 1=пн, … 6=сб. API использует weekday 1–7 (вс=7).
     const jsDay = today.getDay();
-    setSelectedDay(jsDay >= 1 && jsDay <= 6 ? jsDay : null);
+    setSelectedDay(jsDay === 0 ? 7 : jsDay);
   };
 
   const days = data?.days || [];
@@ -72,12 +72,14 @@ export default function Schedule() {
 
       {/* Day chips */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
-        {[1, 2, 3, 4, 5, 6].map(wd => {
+        {[1, 2, 3, 4, 5, 6, 7].map(wd => {
           const dayData = days.find(d => d.weekday === wd);
           const hasLessons = dayData && dayData.lessons.length > 0;
-          const dayDate = dayData ? parseISO(dayData.date) : null;
+          // Считаем дату из начала недели — показываем число у всех дней,
+          // даже если в этот день нет занятий
+          const dayDate = addDays(weekStart, wd - 1);
           const isSelected = selectedDay === wd;
-          const isTodayDay = dayDate && isToday(dayDate);
+          const isTodayDay = isToday(dayDate);
 
           return (
             <button
@@ -94,7 +96,7 @@ export default function Schedule() {
               }`}
             >
               {dayNames[wd - 1].slice(0, 2)}
-              {dayDate && <span className="ml-1">{format(dayDate, 'd')}</span>}
+              <span className="ml-1">{format(dayDate, 'd')}</span>
             </button>
           );
         })}
