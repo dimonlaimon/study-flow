@@ -56,7 +56,7 @@ export default function Schedule() {
       <div>
         <h1 className="text-lg font-bold tracking-tight">Расписание</h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          {data?.group?.name || 'Группа 3332705/50001'}
+          {data?.group?.name || '3332705/50001'}
         </p>
       </div>
 
