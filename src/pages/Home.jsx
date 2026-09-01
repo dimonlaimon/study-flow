@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useVkAuth } from '@/lib/VkAuthContext';
+import { usePlatformAuth } from '@/lib/PlatformAuthContext';
 import { Loader2 } from 'lucide-react';
 import BottomNav from '@/components/layout/BottomNav';
 import Schedule from '@/pages/Schedule';
@@ -8,7 +8,7 @@ import Notes from '@/pages/Notes';
 import SettingsTab from '@/pages/SettingsTab';
 
 export default function Home() {
-  const { user, loading } = useVkAuth();
+  const { user, loading } = usePlatformAuth();
   const [tab, setTab] = useState('schedule');
 
   if (loading) {
