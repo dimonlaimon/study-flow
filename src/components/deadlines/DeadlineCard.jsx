@@ -26,7 +26,7 @@ export default function DeadlineCard({ deadline, canDelete, canEdit, onDelete, o
             <p className="text-xs text-muted-foreground mb-1 break-words">{deadline.subject}</p>
           )}
           {deadline.description && (
-            <p className="text-xs text-muted-foreground break-words">{deadline.description}</p>
+            <p className="text-xs text-muted-foreground break-words whitespace-pre-wrap">{deadline.description}</p>
           )}
         </div>
         <div className="text-right shrink-0">
