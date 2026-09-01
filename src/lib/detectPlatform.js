@@ -4,22 +4,27 @@ export function detectPlatform() {
   if (typeof window === 'undefined') return 'preview';
 
   const tg = window.Telegram?.WebApp;
+  let result = 'vk';
+
   if (tg) {
-    // Telegram: initData — непустая строка, когда приложение открыто внутри Telegram
     if (typeof tg.initData === 'string' && tg.initData.length > 0) {
-      return 'telegram';
-    }
-    // В некоторых случаях initData ещё не заполнен, но user уже доступен
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-      return 'telegram';
+      result = 'telegram';
+    } else if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      result = 'telegram';
     }
   }
-  // В некоторых вариантах встраивания данные приходят через hash
-  if (window.location.hash.includes('tgWebAppData=')) {
-    return 'telegram';
+  if (result !== 'telegram' && window.location.hash.includes('tgWebAppData=')) {
+    result = 'telegram';
   }
 
-  // VK нельзя определить синхронно надёжно — по умолчанию считаем VK,
-  // а если VKWebAppGetUserInfo не ответит, auth-поток откатится в 'preview'.
-  return 'vk';
+  // Отладка — поможет понять, почему Telegram не определяется
+  console.log('[detectPlatform]', {
+    hasTelegramWebApp: !!tg,
+    initDataLength: tg?.initData?.length ?? 0,
+    hasInitDataUnsafeUser: !!tg?.initDataUnsafe?.user,
+    hash: window.location.hash,
+    result,
+  });
+
+  return result;
 }
