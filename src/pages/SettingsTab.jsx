@@ -8,6 +8,12 @@ const roleName = {
   user: 'Студент'
 };
 
+const platformLabel = {
+  vk: 'ВКонтакте',
+  telegram: 'Telegram',
+  preview: 'режим предпросмотра'
+};
+
 export default function SettingsTab({ user }) {
   const { toast } = useToast();
 
@@ -26,26 +32,32 @@ export default function SettingsTab({ user }) {
           )}
           <div>
             <p className="font-semibold text-sm">{user?.full_name || 'Пользователь'}</p>
-            <p className="text-xs text-muted-foreground">Вход через ВКонтакте</p>
+            <p className="text-xs text-muted-foreground">Вход через {platformLabel[user?.platform] || 'ВКонтакте'}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary">
           <GraduationCap className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs font-medium">Роль: {roleName[user?.role] || 'Студент'}</span>
+          <span className="text-xs font-medium">
+            Роль: {roleName[user?.role] || 'Студент'}
+          </span>
         </div>
       </div>
 
       <div className="rounded-xl border bg-white p-5">
-        <p className="text-xs text-muted-foreground mb-3">Группа 3332705/50001 · ИММиТ · СПбПУ</p>
-        <p className="text-xs text-muted-foreground">Расписание загружается с ruz.spbstu.ru</p>
+        <p className="text-xs text-muted-foreground mb-3">
+          Группа 3332705/50001 · ИММиТ · СПбПУ
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Расписание загружается с ruz.spbstu.ru
+        </p>
       </div>
 
       <button
-        onClick={() => toast({ title: 'Вы вошли через ВКонтакте', description: 'Чтобы сменить аккаунт — выйдите из ВК и зайдите снова.' })}
+        onClick={() => toast({ title: `Вы вошли через ${platformLabel[user?.platform] || 'ВКонтакте'}`, description: 'Чтобы сменить аккаунт — выйдите и зайдите снова.' })}
         className="w-full text-xs text-muted-foreground py-2"
       >
-        Сменить аккаунт ВКонтакте
+        Сменить аккаунт
       </button>
     </div>
   );
