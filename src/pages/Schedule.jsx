@@ -3,7 +3,13 @@ import { format, startOfWeek, addWeeks, subWeeks, isToday, parseISO } from 'date
 import { ru } from 'date-fns/locale';
 import { Loader2, CalendarX } from 'lucide-react';
 import ScheduleCard from '@/components/schedule/ScheduleCard';
+import ScheduleWindow from '@/components/schedule/ScheduleWindow';
 import WeekNavigator from '@/components/schedule/WeekNavigator';
+
+const parseTime = (t) => {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+};
 
 const GROUP_ID = 45221;
 const API_URL = 'https://ruz.spbstu.ru/api/v1/ruz/scheduler';
@@ -50,7 +56,7 @@ export default function Schedule() {
       <div>
         <h1 className="text-lg font-bold tracking-tight">Расписание</h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          {data?.group?.name || 'Группа3332705/50001'}
+          {data?.group?.name || 'Группа 3332705/50001'}
         </p>
       </div>
 
@@ -61,6 +67,7 @@ export default function Schedule() {
         onToday={handleToday}
       />
 
+      {/* Day chips */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
         {[1, 2, 3, 4, 5, 6, 7].map(wd => {
           const dayData = days.find(d => d.weekday === wd);
@@ -104,7 +111,9 @@ export default function Schedule() {
           {displayDays.map(day => (
             <div key={day.date}>
               <div className="flex items-center gap-2 mb-3">
-                <h2 className="text-sm font-semibold">{dayNames[day.weekday - 1]}</h2>
+                <h2 className="text-sm font-semibold">
+                  {dayNames[day.weekday - 1]}
+                </h2>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                   isToday(parseISO(day.date))
                     ? 'bg-primary text-primary-foreground'
@@ -114,9 +123,19 @@ export default function Schedule() {
                 </span>
               </div>
               <div className="space-y-2.5">
-                {day.lessons.map((lesson, i) => (
-                  <ScheduleCard key={i} lesson={lesson} />
-                ))}
+                {day.lessons.flatMap((lesson, i) => {
+                  const items = [<ScheduleCard key={`l-${i}`} lesson={lesson} />];
+                  if (i < day.lessons.length - 1) {
+                    const next = day.lessons[i + 1];
+                    const gap = parseTime(next.time_start) - parseTime(lesson.time_end);
+                    if (gap > 20) {
+                      items.push(
+                        <ScheduleWindow key={`w-${i}`} start={lesson.time_end} end={next.time_start} />
+                      );
+                    }
+                  }
+                  return items;
+                })}
               </div>
             </div>
           ))}
