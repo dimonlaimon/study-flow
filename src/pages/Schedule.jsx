@@ -41,8 +41,11 @@ export default function Schedule() {
   }, [weekStart]);
 
   const handleToday = () => {
-    setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
-    setSelectedDay(null);
+    const today = new Date();
+    setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
+    // getDay: 0=вс, 1=пн, … 6=сб. API использует weekday 1–6 для пн–сб.
+    const jsDay = today.getDay();
+    setSelectedDay(jsDay >= 1 && jsDay <= 6 ? jsDay : null);
   };
 
   const days = data?.days || [];
@@ -69,7 +72,7 @@ export default function Schedule() {
 
       {/* Day chips */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
-        {[1, 2, 3, 4, 5, 6, 7].map(wd => {
+        {[1, 2, 3, 4, 5, 6].map(wd => {
           const dayData = days.find(d => d.weekday === wd);
           const hasLessons = dayData && dayData.lessons.length > 0;
           const dayDate = dayData ? parseISO(dayData.date) : null;
