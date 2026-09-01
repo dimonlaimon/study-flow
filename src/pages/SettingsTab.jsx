@@ -1,6 +1,10 @@
 import React from 'react';
-import { GraduationCap, User } from 'lucide-react';
+import { GraduationCap, User, MessageCircle, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+
+// Вставьте сюда свои ссылки на поддержку/чат с разработчиком
+const VK_SUPPORT_LINK = '#';
+const TG_SUPPORT_LINK = '#';
 
 const roleName = {
   admin: 'Администратор',
@@ -60,5 +64,26 @@ export default function SettingsTab({ user }) {
         Сменить аккаунт
       </button>
     </div>
+    <div className="rounded-xl border bg-white p-5 space-y-2.5">
+        <p className="text-sm font-semibold mb-1">Сообщить об ошибках</p>
+        <a
+          href__={VK_SUPPORT_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+        >
+          <MessageCircle className="w-5 h-5 text-primary shrink-0" />
+          <span className="text-sm font-medium">Сообщить об ошибках бота и приложения в ВК</span>
+        </a>
+        <a
+          href__={TG_SUPPORT_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+        >
+          <Send className="w-5 h-5 text-primary shrink-0" />
+          <span className="text-sm font-medium">Сообщить об ошибках бота и приложения в ТГ</span>
+        </a>
+      </div>
   );
 }
