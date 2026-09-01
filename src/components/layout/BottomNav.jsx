@@ -1,10 +1,11 @@
 import React from 'react';
-import { CalendarDays, Target, StickyNote, Settings } from 'lucide-react';
+import { CalendarDays, Target, StickyNote, Cake, Settings } from 'lucide-react';
 
 const tabs = [
   { id: 'schedule', label: 'Расписание', icon: CalendarDays },
   { id: 'deadlines', label: 'Дедлайны', icon: Target },
   { id: 'notes', label: 'Заметки', icon: StickyNote },
+  { id: 'birthdays', label: 'Именинники', icon: Cake },
   { id: 'settings', label: 'Ещё', icon: Settings },
 ];
 
