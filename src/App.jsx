@@ -4,12 +4,12 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider } from '@/lib/AuthContext';
-import { VkAuthProvider, useVkAuth } from '@/lib/VkAuthContext';
+import { PlatformAuthProvider, usePlatformAuth } from '@/lib/PlatformAuthContext';
 import ScrollToTop from './components/ScrollToTop';
 import Home from '@/pages/Home';
 
 const AuthenticatedApp = () => {
-  const { loading } = useVkAuth();
+  const { loading } = usePlatformAuth();
 
   if (loading) {
     return (
@@ -30,7 +30,7 @@ const AuthenticatedApp = () => {
 function App() {
   return (
     <AuthProvider>
-      <VkAuthProvider>
+      <PlatformAuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router basename="/study-flow">
             <ScrollToTop />
@@ -38,7 +38,7 @@ function App() {
           </Router>
           <Toaster />
         </QueryClientProvider>
-      </VkAuthProvider>
+      </PlatformAuthProvider>
     </AuthProvider>
   )
 }
