@@ -7,11 +7,11 @@ export default function ScheduleWindow({ start, end }) {
 
   return (
     <div className="rounded-xl border border-dashed border-black-300 bg-black-100 p-5 flex items-center justify-center gap-2">
-      <Coffee className="w-3.5 h-3.5" />
-      <div className="font-medium text-black-800 text-lg"> // Увеличиваем размер шрифта и делаем цвет чёрным
+      <Coffee className="w-6 h-6" />
+      <div className="font-medium text-black-800 text-lg"> 
         Окно
       </div>
-      <div className="text-xs text-muted-foreground"> // Остальной текст остаётся прежним
+      <div className="text-xs text-muted-foreground"> 
         {start}–{end}
       </div>
     </div>
