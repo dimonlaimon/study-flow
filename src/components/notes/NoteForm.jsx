@@ -15,12 +15,12 @@ const colors = [
 ];
 
 export default function NoteForm({ note, onSubmit, onCancel }) {
-  const [form, setForm] = useState({ title: '', content: '', color: 'yellow' });
+  const [form, setForm] = useState({ title: '', content: '', color: 'white' });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (note) {
-      setForm({ title: note.title, content: note.content || '', color: note.color || 'yellow' });
+      setForm({ title: note.title, content: note.content || '', color: note.color || 'white' });
     }
   }, [note]);
 
