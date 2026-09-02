@@ -105,6 +105,6 @@ export default function SettingsTab({ user }) {
       >
         Сменить аккаунт
       </button>
-    </div> {/* ✅ Вот этот закрывающий div был потерян */}
+    </div>
   );
 }
