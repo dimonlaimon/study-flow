@@ -46,7 +46,6 @@ export default function SettingsTab({ user }) {
             Роль: {roleName[user?.role] || 'Студент'}
           </span>
         </div>
-      </div>
 
       <div className="rounded-xl border bg-white p-5">
         <p className="text-xs text-muted-foreground mb-3">
