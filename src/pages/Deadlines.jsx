@@ -21,7 +21,7 @@ export default function Deadlines({ user }) {
       .select('*')
       .order('due_date', { ascending: true });
     if (error) {
-      toast({ title: 'Ошибка загрузки', description: error.message, variant: 'destructive' });
+      toast({ title: 'Ошибка загрузки. Пожалуйста, попробуйте позже!', description: error.message, variant: 'destructive' });
     } else {
       setDeadlines(data || []);
     }
@@ -40,7 +40,7 @@ export default function Deadlines({ user }) {
       created_by_name: user?.full_name || null
     });
     if (error) {
-      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+      toast({ title: 'Ошибка, что—то сломалось!', description: error.message, variant: 'destructive' });
       return;
     }
     setShowForm(false);
@@ -56,18 +56,18 @@ export default function Deadlines({ user }) {
       due_date: data.due_date
     }).eq('id', editingDeadline.id);
     if (error) {
-      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+      toast({ title: 'Ошибка, что—то сломалось!', description: error.message, variant: 'destructive' });
       return;
     }
     setEditingDeadline(null);
-    toast({ title: 'Дедлайн обновлён' });
+    toast({ title: 'Дедлайн изменён' });
     loadDeadlines();
   };
 
   const handleDelete = async (id) => {
     const { error } = await supabase.from('deadlines').delete().eq('id', id);
     if (error) {
-      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+      toast({ title: 'Ошибка, что—то сломалось!', description: error.message, variant: 'destructive' });
       return;
     }
     toast({ title: 'Дедлайн удалён' });
