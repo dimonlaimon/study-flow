@@ -41,7 +41,7 @@ export default function DeadlineForm({ onSubmit, onCancel, deadline }) {
           <Input
             value={form.title}
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-            placeholder="Сдать лабораторную №3"
+            placeholder="..."
             className="mt-1"
           />
         </div>
@@ -50,7 +50,7 @@ export default function DeadlineForm({ onSubmit, onCancel, deadline }) {
           <Input
             value={form.subject}
             onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
-            placeholder="Физика"
+            placeholder="..."
             className="mt-1"
           />
         </div>
@@ -59,7 +59,7 @@ export default function DeadlineForm({ onSubmit, onCancel, deadline }) {
           <Textarea
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            placeholder="Подробности..."
+            placeholder="..."
             className="mt-1"
             rows={2}
           />
