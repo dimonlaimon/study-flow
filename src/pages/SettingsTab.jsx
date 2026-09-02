@@ -3,8 +3,8 @@ import { GraduationCap, User, MessageCircle, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 // Вставьте сюда свои ссылки на поддержку/чат с разработчиком
-const VK_SUPPORT_LINK = '#';
-const TG_SUPPORT_LINK = '#';
+const VK_SUPPORT_LINK = 'https://vk.ru/dimka050707';
+const TG_SUPPORT_LINK = 'https://vk.ru/dimka050707';
 
 const roleName = {
   admin: 'Администратор',
