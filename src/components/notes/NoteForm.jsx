@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { X } from 'lucide-react';
 
 const colors = [
+  { value: 'white', bg: 'bg-white-400' },
   { value: 'yellow', bg: 'bg-amber-400' },
   { value: 'blue', bg: 'bg-blue-400' },
   { value: 'green', bg: 'bg-emerald-400' },
@@ -45,7 +46,7 @@ export default function NoteForm({ note, onSubmit, onCancel }) {
           <Input
             value={form.title}
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-            placeholder="Моя заметка"
+            placeholder="..."
             className="mt-1"
           />
         </div>
@@ -54,7 +55,7 @@ export default function NoteForm({ note, onSubmit, onCancel }) {
           <Textarea
             value={form.content}
             onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-            placeholder="Текст заметки..."
+            placeholder="..."
             className="mt-1"
             rows={3}
           />
