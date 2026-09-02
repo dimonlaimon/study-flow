@@ -14,7 +14,7 @@ const colorStyles = {
 };
 
 export default function NoteCard({ note, onEdit, onDelete }) {
-  const style = colorStyles[note.color] || colorStyles.yellow;
+  const style = colorStyles[note.color] || colorStyles.white;
 
   return (
     <div className={`rounded-xl border p-4 ${style} transition-all hover:shadow-md`}>
