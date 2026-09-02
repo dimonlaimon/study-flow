@@ -56,14 +56,7 @@ export default function SettingsTab({ user }) {
           Расписание загружается с ruz.spbstu.ru
         </p>
       </div>
-
-      <button
-        onClick={() => toast({ title: `Вы вошли через ${platformLabel[user?.platform] || 'ВКонтакте'}`, description: 'Чтобы сменить аккаунт — выйдите и зайдите снова.' })}
-        className="w-full text-xs text-muted-foreground py-2"
-      >
-        Сменить аккаунт
-      </button>
-    </div>
+      </div>
     <div className="rounded-xl border bg-white p-5 space-y-2.5">
         <p className="text-sm font-semibold mb-1">Сообщить об ошибках</p>
         <a
@@ -85,5 +78,13 @@ export default function SettingsTab({ user }) {
           <span className="text-sm font-medium">Сообщить об ошибках бота и приложения в ТГ</span>
         </a>
       </div>
+
+      <button
+        onClick={() => toast({ title: `Вы вошли через ${platformLabel[user?.platform] || 'ВКонтакте'}`, description: 'Чтобы сменить аккаунт — выйдите и зайдите снова.' })}
+        className="w-full text-xs text-muted-foreground py-2"
+      >
+        Сменить аккаунт
+      </button>
+    
   );
 }
