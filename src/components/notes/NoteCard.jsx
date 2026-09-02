@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
 const colorStyles = {
+  white: 'bg-white-50 border-white-200',
   yellow: 'bg-amber-50 border-amber-200',
   blue: 'bg-blue-50 border-blue-200',
   green: 'bg-emerald-50 border-emerald-200',
