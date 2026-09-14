@@ -1,14 +1,8 @@
 -- ============================================
 --  Study Flow — настройка базы Supabase
 --  Скопируйте и выполните в Supabase SQL Editor
---  (Dashboard → SQL Editor → New query → Run)
 -- ============================================
 
--- ────────────────────────────────────────────
---  МИГРАЦИЯ существующей таблицы profiles
---  (если база уже была с VK-данными)
---  Безопасно выполнять повторно.
--- ────────────────────────────────────────────
 do $$
 begin
   if exists (
@@ -18,28 +12,18 @@ begin
     select 1 from information_schema.columns
     where table_schema = 'public' and table_name = 'profiles' and column_name = 'telegram_id'
   ) then
-    -- Снимаем vk_id как primary key
     alter table public.profiles drop constraint if exists profiles_pkey;
-    -- Добавляем автоинкрементный id
     alter table public.profiles add column if not exists id bigint generated always as identity primary key;
-    -- vk_id больше не обязателен и не PK
     alter table public.profiles alter column vk_id drop not null;
     alter table public.profiles add constraint profiles_vk_id_unique unique (vk_id);
-    -- Колонка для Telegram
     alter table public.profiles add column telegram_id text;
     alter table public.profiles add constraint profiles_telegram_id_unique unique (telegram_id);
   end if;
 end $$;
 
--- ────────────────────────────────────────────
---  КОЛОНКИ ДЛЯ УВЕДОМЛЕНИЙ (безопасно повторно)
--- ────────────────────────────────────────────
 alter table public.profiles add column if not exists vk_notify_enabled boolean default false;
 alter table public.profiles add column if not exists tg_notify_enabled boolean default false;
 
--- ────────────────────────────────────────────
---  СВОЖАЯ УСТАНОВКА (новая база)
--- ────────────────────────────────────────────
 create table if not exists public.profiles (
   id bigint generated always as identity primary key,
   vk_id text unique,
@@ -63,7 +47,6 @@ create policy "profiles_upsert" on public.profiles for insert with check (true);
 drop policy if exists "profiles_update" on public.profiles;
 create policy "profiles_update" on public.profiles for update using (true);
 
--- Таблица общих дедлайнов группы
 create table if not exists public.deadlines (
   id bigint generated always as identity primary key,
   title text not null,
@@ -89,3 +72,24 @@ create policy "deadlines_update" on public.deadlines for update using (true);
 
 drop policy if exists "deadlines_delete" on public.deadlines;
 create policy "deadlines_delete" on public.deadlines for delete using (true);
+
+-- ЖУРНАЛ ОТПРАВЛЕННЫХ УВЕДОМЛЕНИЙ
+create table if not exists public.notifications_sent (
+  id bigint generated always as identity primary key,
+  deadline_id bigint not null references public.deadlines(id) on delete cascade,
+  profile_id bigint not null references public.profiles(id) on delete cascade,
+  platform text not null,
+  sent_date timestamptz default now(),
+  unique (deadline_id, profile_id, platform)
+);
+
+alter table public.notifications_sent enable row level security;
+
+drop policy if exists "notifications_sent_read" on public.notifications_sent;
+create policy "notifications_sent_read" on public.notifications_sent for select using (true);
+
+drop policy if exists "notifications_sent_insert" on public.notifications_sent;
+create policy "notifications_sent_insert" on public.notifications_sent for insert with check (true);
+
+drop policy if exists "notifications_sent_delete" on public.notifications_sent;
+create policy "notifications_sent_delete" on public.notifications_sent for delete using (true);
