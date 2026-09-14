@@ -1,5 +1,5 @@
 // Supabase Edge Function: send-notifications
-// Проверяет дедлайны (за 2 дня) и отправляет уведомления в ВК и Telegram.
+// Проверяет дедлайны (за 2 дня и ближе) и отправляет уведомления в ВК и Telegram.
 //
 // Деплой:
 //   supabase functions deploy send-notifications --no-verify-jwt
@@ -27,6 +27,39 @@ const supabase = createClient(
 
 const VK_COMMUNITY_TOKEN = Deno.env.get("VK_COMMUNITY_TOKEN") || "";
 const TG_BOT_TOKEN = Deno.env.get("TG_BOT_TOKEN") || "";
+
+// Склонение слова «день» по числу
+function dayWord(n: number): string {
+  if (n === 1) return "день";
+  if (n >= 2 && n <= 4) return "дня";
+  return "дней";
+}
+
+// Человекочитаемый остаток времени до дедлайна
+function getRelativeTime(dueDate: Date, now: Date): string {
+  const diffMs = dueDate.getTime() - now.getTime();
+  const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+  if (diffDays <= 0) return "сегодня";
+  if (diffDays === 1) return "завтра";
+  return `через ${diffDays} ${dayWord(diffDays)}`;
+}
+
+// Формирует текст сообщения из данных дедлайна
+function buildMessage(d: any, now: Date): string {
+  const due = new Date(d.due_date);
+  const relative = getRelativeTime(due, now);
+
+  let msg = `⏰ Дедлайн ${relative}!\n\n📝 ${d.title}`;
+  if (d.subject) msg += `\n📚 ${d.subject}`;
+  if (d.description) msg += `\n\n${d.description}`;
+
+  const dateStr = due.toLocaleString("ru-RU", {
+    day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
+  });
+  msg += `\n\n📅 Срок: ${dateStr}`;
+
+  return msg;
+}
 
 async function sendVK(userId: string, message: string) {
   if (!VK_COMMUNITY_TOKEN) return;
@@ -65,6 +98,7 @@ Deno.serve(async () => {
     const now = new Date();
     const inTwoDays = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
 
+    // Дедлайны в ближайшие 2 дня, ещё не уведомлённые
     const { data: deadlines, error: dErr } = await supabase
       .from("deadlines")
       .select("*")
@@ -77,6 +111,7 @@ Deno.serve(async () => {
       return new Response(JSON.stringify({ message: "Нет дедлайнов для уведомления" }));
     }
 
+    // Пользователи, включившие уведомления
     const { data: vkUsers } = await supabase
       .from("profiles")
       .select("vk_id")
@@ -92,12 +127,7 @@ Deno.serve(async () => {
     let sent = 0;
 
     for (const d of deadlines) {
-      const dateStr = new Date(d.due_date).toLocaleString("ru-RU", {
-        day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
-      });
-      const msg = `⏰ Дедлайн через 2 дня!\n\n📝 ${d.title}${
-        d.subject ? `\n📚 ${d.subject}` : ""
-      }${d.description ? `\n\n${d.description}` : ""}\n\n📅 Срок: ${dateStr}`;
+      const msg = buildMessage(d, now);
 
       for (const u of vkUsers || []) {
         await sendVK(u.vk_id, msg);
@@ -108,6 +138,7 @@ Deno.serve(async () => {
         sent++;
       }
 
+      // Помечаем как уведомлённый, чтобы не отправить повторно
       await supabase.from("deadlines").update({ is_notified: true }).eq("id", d.id);
     }
 
