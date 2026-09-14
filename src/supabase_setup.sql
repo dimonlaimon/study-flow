@@ -32,6 +32,12 @@ begin
 end $$;
 
 -- ────────────────────────────────────────────
+--  КОЛОНКИ ДЛЯ УВЕДОМЛЕНИЙ (безопасно повторно)
+-- ────────────────────────────────────────────
+alter table public.profiles add column if not exists vk_notify_enabled boolean default false;
+alter table public.profiles add column if not exists tg_notify_enabled boolean default false;
+
+-- ────────────────────────────────────────────
 --  СВОЖАЯ УСТАНОВКА (новая база)
 -- ────────────────────────────────────────────
 create table if not exists public.profiles (
@@ -41,6 +47,8 @@ create table if not exists public.profiles (
   full_name text,
   photo_url text,
   role text default 'user',
+  vk_notify_enabled boolean default false,
+  tg_notify_enabled boolean default false,
   created_date timestamptz default now()
 );
 
