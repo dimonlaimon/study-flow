@@ -1,4 +1,4 @@
-// Определяет платформу, в которой запущено приложение.
+/// Определяет платформу, в которой запущено приложение.
 // Возвращает 'telegram' | 'vk' | 'preview'
 export function detectPlatform() {
   if (typeof window === 'undefined') return 'preview';
