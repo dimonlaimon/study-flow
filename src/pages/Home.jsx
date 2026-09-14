@@ -5,8 +5,8 @@ import BottomNav from '@/components/layout/BottomNav';
 import Schedule from '@/pages/Schedule';
 import Deadlines from '@/pages/Deadlines';
 import Notes from '@/pages/Notes';
-import Birthdays from '@/pages/Birthdays';
 import SettingsTab from '@/pages/SettingsTab';
+import Birthdays from '@/pages/Birthdays';
 
 export default function Home() {
   const { user, loading } = usePlatformAuth();
