@@ -120,53 +120,60 @@ export default function SettingsTab({ user }) {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-primary" />
-          <p className="text-sm font-semibold">Уведомления о дедлайнах</p>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Сообщения приходят за 2 дня до дедлайна от имени сообщества ВК или бота Telegram.
-        </p>
-
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">ВКонтакте</p>
-            {platform !== 'vk' && (
-              <p className="text-xs text-muted-foreground">Войдите через ВК, чтобы включить</p>
-            )}
-          </div>
-          <Switch
-            checked={vkNotify}
-            onCheckedChange={toggleVk}
-            disabled={platform !== 'vk' || busy}
-          />
-        </div>
-
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Telegram</p>
-            {platform === 'telegram' && !tgNotify && (
-              <a href__={TG_BOT_LINK} target="_blank" rel="noopener noreferrer" className="text-xs text-primary inline-flex items-center gap-0.5">
-                Сначала запустите бота <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-            {platform !== 'telegram' && (
-              <p className="text-xs text-muted-foreground">Войдите через Telegram, чтобы включить</p>
-            )}
-          </div>
-          <Switch
-            checked={tgNotify}
-            onCheckedChange={toggleTg}
-            disabled={platform !== 'telegram' || busy}
-          />
-        </div>
-
-        {busy && (
-          <div className="flex justify-center">
-            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+      <div className="relative rounded-xl border bg-white p-5 space-y-4">
+        {user?.role !== 'admin' && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60 backdrop-blur-sm">
+            <p className="text-sm font-semibold text-muted-foreground text-center px-4">Рассылки находятся в разработке</p>
           </div>
         )}
+        <div className={user?.role !== 'admin' ? 'pointer-events-none select-none blur-sm' : ''}>
+          <div className="flex items-center gap-2">
+            <Bell className="w-4 h-4 text-primary" />
+            <p className="text-sm font-semibold">Уведомления о дедлайнах</p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Сообщения приходят за 2 дня до дедлайна от имени сообщества ВК или бота Telegram.
+          </p>
+
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">ВКонтакте</p>
+              {platform !== 'vk' && (
+                <p className="text-xs text-muted-foreground">Войдите через ВК, чтобы включить</p>
+              )}
+            </div>
+            <Switch
+              checked={vkNotify}
+              onCheckedChange={toggleVk}
+              disabled={platform !== 'vk' || busy}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">Telegram</p>
+              {platform === 'telegram' && !tgNotify && (
+                <a href__={TG_BOT_LINK} target="_blank" rel="noopener noreferrer" className="text-xs text-primary inline-flex items-center gap-0.5">
+                  Сначала запустите бота <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+              {platform !== 'telegram' && (
+                <p className="text-xs text-muted-foreground">Войдите через Telegram, чтобы включить</p>
+              )}
+            </div>
+            <Switch
+              checked={tgNotify}
+              onCheckedChange={toggleTg}
+              disabled={platform !== 'telegram' || busy}
+            />
+          </div>
+
+          {busy && (
+            <div className="flex justify-center">
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="rounded-xl border bg-white p-5">
