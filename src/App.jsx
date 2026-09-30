@@ -1,4 +1,23 @@
-import { Toaster } from "@/components/ui/toaster"
+import React from 'react';
+import MaintenanceOverlay from './components/MaintenanceOverlay'; // Добавьте эту строку
+
+// Функция проверки даты
+const isMaintenanceActive = () => {
+  const now = new Date();
+  const endDate = new Date('2026-10-02T00:00:00');
+  return now < endDate;
+};
+
+function App() {
+  // Если дата еще не наступила — показываем заглушку
+  if (isMaintenanceActive()) {
+    return <MaintenanceOverlay />;
+  }
+
+  // Иначе показываем ваше обычное приложение
+  return (
+    <div>
+      import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -44,3 +63,9 @@ function App() {
 }
 
 export default App
+
+    </div>
+  );
+}
+
+export default App;
