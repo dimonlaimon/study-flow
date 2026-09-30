@@ -1,39 +1,25 @@
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
+import React from 'react';
+import { Toaster } from "@/components/ui/toaster";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClientInstance } from '@/lib/query-client';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
+import Home from '@/pages/Home';
+
+// 👇 Импорты для работы заглушки
+import MaintenanceOverlay from './components/MaintenanceOverlay'; // Компонент самой заглушки
+import { useMaintenance } from './components/useMaintenance'; // Логика проверки даты
+
 import { AuthProvider } from '@/lib/AuthContext';
 import { PlatformAuthProvider, usePlatformAuth } from '@/lib/PlatformAuthContext';
 import ScrollToTop from './components/ScrollToTop';
-import Home from '@/pages/Home';
-
-// --- НОВЫЙ КОМПОНЕНТ ЗАГЛУШКИ ---
-const MaintenanceOverlay = () => {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="text-center p-8 rounded-xl border border-white/10 bg-background/50">
-        <div className="text-6xl mb-4">🔒</div>
-        <h1 className="text-2xl font-semibold mb-2">Идёт настройка приложения на октябрь</h1>
-        <p className="text-muted-foreground">Приложение заработает 2.10</p>
-      </div>
-    </div>
-  );
-};
 
 const AuthenticatedApp = () => {
+  // Проверка режима обслуживания через отдельный хук
+  if (useMaintenance()) return <MaintenanceOverlay />;
+
   const { loading } = usePlatformAuth();
 
-  // --- ЛОГИКА ЗАГЛУШКИ ---
-  // Если сегодня раньше 2 октября 2026 года — показываем только заглушку
-  const now = new Date();
-  const maintenanceEnd = new Date('2026-10-02T00:00:00');
-  
-  if (now < maintenanceEnd) {
-    return <MaintenanceOverlay />;
-  }
-
-  // Если заглушка не нужна, показываем либо лоадер, либо само приложение
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -44,7 +30,9 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      {/* Основной маршрут */}
       <Route path="/" element={<Home />} />
+      {/* Обработчик ошибки 404 */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -66,4 +54,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
