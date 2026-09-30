@@ -8,9 +8,32 @@ import { PlatformAuthProvider, usePlatformAuth } from '@/lib/PlatformAuthContext
 import ScrollToTop from './components/ScrollToTop';
 import Home from '@/pages/Home';
 
+// --- НОВЫЙ КОМПОНЕНТ ЗАГЛУШКИ ---
+const MaintenanceOverlay = () => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="text-center p-8 rounded-xl border border-white/10 bg-background/50">
+        <div className="text-6xl mb-4">🔒</div>
+        <h1 className="text-2xl font-semibold mb-2">Идёт настройка приложения на октябрь</h1>
+        <p className="text-muted-foreground">Приложение заработает 2.10</p>
+      </div>
+    </div>
+  );
+};
+
 const AuthenticatedApp = () => {
   const { loading } = usePlatformAuth();
 
+  // --- ЛОГИКА ЗАГЛУШКИ ---
+  // Если сегодня раньше 2 октября 2026 года — показываем только заглушку
+  const now = new Date();
+  const maintenanceEnd = new Date('2026-10-02T00:00:00');
+  
+  if (now < maintenanceEnd) {
+    return <MaintenanceOverlay />;
+  }
+
+  // Если заглушка не нужна, показываем либо лоадер, либо само приложение
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
