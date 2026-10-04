@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import Home from '@/pages/Home';
 
-// 👇 Импорты для работы заглушки и объявления
+// Импорты для работы заглушки и объявления
 import MaintenanceOverlay from './components/MaintenanceOverlay'; // Компонент самой заглушки
 import { useMaintenance } from './components/useMaintenance'; // Логика проверки даты
 import AnnouncementBanner from './components/AnnouncementBanner'; // Новый компонент ✅
@@ -50,16 +50,18 @@ function App() {
 
           {/* Глобальные элементы, которые НЕ зависят от текущего пути */}
           <ScrollToTop />
-          {/* Ваш новый баннер будет здесь */
-           * Он отображается поверх всех маршрутов,
-           * но внутри контекста провайдеров, чтобы работал localStorage.
-           */
+
+          {/* 
+            Ваш новый баннер отображается поверх всех маршрутов
+            и внутри контекста провайдеров, чтобы работал localStorage.
+          */}
           <AnnouncementBanner />
+
           <Toaster />
         </QueryClientProvider>
       </PlatformAuthProvider>
     </AuthProvider>
-  )
+  );
 }
 
 export default App;
