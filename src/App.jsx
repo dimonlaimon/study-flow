@@ -9,7 +9,7 @@ import Home from '@/pages/Home';
 // Импорты для работы заглушки и объявления
 import MaintenanceOverlay from './components/MaintenanceOverlay'; // Компонент самой заглушки
 import { useMaintenance } from './components/useMaintenance'; // Логика проверки даты
-import AnnouncementBanner from './components/AnnouncementBanner'; // Новый компонент ✅
+import { AnnouncementBanner } from './components/AnnouncementBanner'; // ✅ Исправлено: именованный импорт
 
 import { AuthProvider } from '@/lib/AuthContext';
 import { PlatformAuthProvider, usePlatformAuth } from '@/lib/PlatformAuthContext';
