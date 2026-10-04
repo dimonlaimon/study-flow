@@ -9,7 +9,7 @@ import Home from '@/pages/Home';
 // 👇 Импорты для работы заглушки и объявления
 import MaintenanceOverlay from './components/MaintenanceOverlay'; // Компонент самой заглушки
 import { useMaintenance } from './components/useMaintenance'; // Логика проверки даты
-+ import AnnouncementBanner from './components/AnnouncementBanner'; // Новый компонент ✅
+import AnnouncementBanner from './components/AnnouncementBanner'; // Новый компонент ✅
 
 import { AuthProvider } from '@/lib/AuthContext';
 import { PlatformAuthProvider, usePlatformAuth } from '@/lib/PlatformAuthContext';
@@ -45,15 +45,15 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           {/* Роутер должен содержать все маршруты приложения */}
           <Router basename="/study-flow">
-            {/* ⬆️ Здесь находится вся логика отображения страниц */
-             Заглушка-замок проверяется внутри этого компонента,
-             поэтому он всегда должен быть здесь! */
             <AuthenticatedApp />
           </Router>
 
           {/* Глобальные элементы, которые НЕ зависят от текущего пути */}
           <ScrollToTop />
-          // Ваш новый баннер будет здесь ✔️
+          {/* Ваш новый баннер будет здесь */
+           * Он отображается поверх всех маршрутов,
+           * но внутри контекста провайдеров, чтобы работал localStorage.
+           */
           <AnnouncementBanner />
           <Toaster />
         </QueryClientProvider>
