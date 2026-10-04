@@ -1,19 +1,19 @@
-import React from "react";
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClientInstance } from "@/lib/query-client";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import PageNotFound from "./lib/PageNotFound";
-import Home from "@/pages/Home";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClientInstance } from '@/lib/query-client';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import PageNotFound from './lib/PageNotFound';
+import Home from '@/pages/Home';
 
 // 👇 Импорты для работы заглушки и объявления
-import MaintenanceOverlay from "./components/MaintenanceOverlay"; // Компонент самой заглушки
-import { useMaintenance } from "./components/useMaintenance"; // Логика проверки даты
-import AnnouncementBanner from "./components/AnnouncementBanner"; // 👈 Новый компонент
+import MaintenanceOverlay from './components/MaintenanceOverlay'; // Компонент самой заглушки
+import { useMaintenance } from './components/useMaintenance'; // Логика проверки даты
++ import AnnouncementBanner from './components/AnnouncementBanner'; // Новый компонент ✅
 
-import { AuthProvider } from "@/lib/AuthContext";
-import { PlatformAuthProvider, usePlatformAuth } from "@/lib/PlatformAuthContext";
-import ScrollToTop from "./components/ScrollToTop";
+import { AuthProvider } from '@/lib/AuthContext';
+import { PlatformAuthProvider, usePlatformAuth } from '@/lib/PlatformAuthContext';
+import ScrollToTop from './components/ScrollToTop';
 
 const AuthenticatedApp = () => {
   const { loading } = usePlatformAuth();
@@ -43,20 +43,23 @@ function App() {
     <AuthProvider>
       <PlatformAuthProvider>
         <QueryClientProvider client={queryClientInstance}>
-          {/* Роутер только для маршрутов */}
+          {/* Роутер должен содержать все маршруты приложения */}
           <Router basename="/study-flow">
+            {/* ⬆️ Здесь находится вся логика отображения страниц */
+             Заглушка-замок проверяется внутри этого компонента,
+             поэтому он всегда должен быть здесь! */
             <AuthenticatedApp />
           </Router>
 
           {/* Глобальные элементы, которые НЕ зависят от текущего пути */}
-          <AuthenticatedApp />
           <ScrollToTop />
-          <AnnouncementBanner /> {/* 🔥 Ваш новый баннер будет здесь */
+          // Ваш новый баннер будет здесь ✔️
+          <AnnouncementBanner />
           <Toaster />
         </QueryClientProvider>
       </PlatformAuthProvider>
     </AuthProvider>
-  );
+  )
 }
 
 export default App;
