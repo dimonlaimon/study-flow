@@ -13,6 +13,8 @@ export function AnnouncementBanner() {
   // Если пользователь уже закрыл баннер, ничего не рендерим
   if (isClosed) return null;
 
+  return null
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center overflow-auto p-4">
       {/* Затемнение фона */}
