@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { format, startOfWeek, addWeeks, subWeeks, addDays, isToday, parseISO } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { Loader2, CalendarX } from 'lucide-react';
+import ScheduleCard from '@/components/schedule/ScheduleCard';
+import ScheduleWindow from '@/components/schedule/ScheduleWindow';
+import WeekNavigator from '@/components/schedule/WeekNavigator';
 
-export function OpenEduBanner() {
+// 👇 ЭТА ФУНКЦИЯ БАННЕРА ДОБАВЛЕНА ПРЯМО СЮДА (не нужен отдельный файл) 👇
+function OpenEduBanner() {
   return (
     <div className="mb-6 p-4 rounded-lg border border-red-200 bg-red-50 text-red-800 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-300 shadow-sm ring-1 ring-red-100 dark:ring-red-900/40">
       <h3 className="font-bold text-lg leading-tight mb-1 tracking-wide uppercase">
@@ -12,14 +19,7 @@ export function OpenEduBanner() {
     </div>
   );
 }
-
-import React, { useState, useEffect } from 'react';
-import { format, startOfWeek, addWeeks, subWeeks, addDays, isToday, parseISO } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import { Loader2, CalendarX } from 'lucide-react';
-import ScheduleCard from '@/components/schedule/ScheduleCard';
-import ScheduleWindow from '@/components/schedule/ScheduleWindow';
-import WeekNavigator from '@/components/schedule/WeekNavigator';
+// 👆
 
 const parseTime = (t) => {
   const [h, m] = t.split(':').map(Number);
@@ -32,6 +32,10 @@ const API_URL = 'https://ruz.spbstu.ru/api/v1/ruz/scheduler';
 const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
 export default function Schedule() {
+  // 👇 ПЕРЕМЕННАЯ ДЛЯ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ БАННЕРА
+  const showAlert = true; // Поставь false, чтобы скрыть баннер
+  // 👆
+
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +62,6 @@ export default function Schedule() {
   const handleToday = () => {
     const today = new Date();
     setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-    // getDay: 0=вс, 1=пн, … 6=сб. API использует weekday 1–7 (вс=7).
     const jsDay = today.getDay();
     setSelectedDay(jsDay === 0 ? 7 : jsDay);
   };
@@ -71,6 +74,10 @@ export default function Schedule() {
 
   return (
     <div className="space-y-5">
+      {/* 👇 ЗДЕСЬ ОТРИСОВЫВАЕТСЯ БАННЕР (если showAlert = true) */}
+      {showAlert && <OpenEduBanner />}
+      {/* 👆 */}
+
       <div>
         <h1 className="text-lg font-bold tracking-tight">Расписание</h1>
         <p className="text-xs text-muted-foreground mt-0.5">
@@ -90,8 +97,6 @@ export default function Schedule() {
         {[1, 2, 3, 4, 5, 6, 7].map(wd => {
           const dayData = days.find(d => d.weekday === wd);
           const hasLessons = dayData && dayData.lessons.length > 0;
-          // Считаем дату из начала недели — показываем число у всех дней,
-          // даже если в этот день нет занятий
           const dayDate = addDays(weekStart, wd - 1);
           const isSelected = selectedDay === wd;
           const isTodayDay = isToday(dayDate);
