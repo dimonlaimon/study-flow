@@ -21,12 +21,12 @@ function BagBanner() {
 // 👇 ЭТА ФУНКЦИЯ БАННЕРА ДОБАВЛЕНА ПРЯМО СЮДА (не нужен отдельный файл) 👇
 function OpenEduBanner() {
   return (
-    <div className="mb-6 p-4 rounded-lg border border-red-200 bg-red-50 text-red-800 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-300 shadow-sm ring-1 ring-red-100 dark:ring-red-900/40">
+    <div className="mb-6 p-4 rounded-lg border border-green-200 bg-green-50 text-green-800 dark:border-green-900/30 dark:bg-green-950/20 dark:text-green-300 shadow-sm ring-1 ring-green-100 dark:ring-green-900/40">
       <h3 className="font-bold text-lg leading-tight mb-1 tracking-wide uppercase">
-        САЙТ OPENEDU.RU ПОКА НЕ ДОСТУПЕН
+        САЙТ OPENEDU.RU СНОВА ДОСТУПЕН
       </h3>
       <p className="text-sm font-medium">
-        Дедлайны по предмету "Онлайн-курс "Технологическое лидерство"" не будут обновляться до восстановления работы сайта.
+        Дедлайны по предмету "Онлайн-курс "Технологическое лидерство"" будут обновлены в ближайшее время.
       </p>
     </div>
   );
@@ -87,9 +87,9 @@ export default function Schedule() {
   return (
     <div className="space-y-5">
       {/* 👇 ЗДЕСЬ ОТРИСОВЫВАЕТСЯ БАННЕР (если showAlert = true) */}
-      {showAlert && <OpenEduBanner />}
-      {/* 👆 */}
       {showAlert && <BagBanner />}
+      {/* 👆 */}
+      {showAlert && <OpenEduBanner />}
 
       <div>
         <h1 className="text-lg font-bold tracking-tight">Расписание</h1>
