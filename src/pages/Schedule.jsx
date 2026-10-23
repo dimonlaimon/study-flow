@@ -45,7 +45,7 @@ const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
 export default function Schedule() {
   // 👇 ПЕРЕМЕННАЯ ДЛЯ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ БАННЕРА
-  const showAlert = true; // Поставь false, чтобы скрыть баннер, а true, чтобы включить баннер
+  const showAlert = false; // Поставь false, чтобы скрыть баннер, а true, чтобы включить баннер
   // 👆
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
@@ -89,7 +89,7 @@ export default function Schedule() {
       {/* 👇 ЗДЕСЬ ОТРИСОВЫВАЕТСЯ БАННЕР (если showAlert = true) */}
       {showAlert && <BagBanner />}
       {/* 👆 */}
-      {showAlert && <Расписание />}
+      {showAlert && <OpenEduBanner />}
 
       <div>
         <h1 className="text-lg font-bold tracking-tight">Расписание</h1>
