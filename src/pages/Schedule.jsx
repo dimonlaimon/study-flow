@@ -89,7 +89,7 @@ export default function Schedule() {
       {/* 👇 ЗДЕСЬ ОТРИСОВЫВАЕТСЯ БАННЕР (если showAlert = true) */}
       {showAlert && <BagBanner />}
       {/* 👆 */}
-      {showAlert && <BagBanner />}
+      {showAlert && <Расписание />}
 
       <div>
         <h1 className="text-lg font-bold tracking-tight">Расписание</h1>
