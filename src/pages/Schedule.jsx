@@ -75,9 +75,9 @@ export default function Schedule() {
   return (
     <div className="space-y-5">
       {/* 👇 ЗДЕСЬ ОТРИСОВЫВАЕТСЯ БАННЕР (если showAlert = true) */}
-      {showAlert && <BagBanner />}
-      {/* 👆 */}
       {showAlert && <OpenEduBanner />}
+      {/* 👆 */}
+    
 
       <div>
         <h1 className="text-lg font-bold tracking-tight">Расписание</h1>
