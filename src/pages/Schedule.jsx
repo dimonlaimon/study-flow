@@ -6,27 +6,15 @@ import ScheduleCard from '@/components/schedule/ScheduleCard';
 import ScheduleWindow from '@/components/schedule/ScheduleWindow';
 import WeekNavigator from '@/components/schedule/WeekNavigator';
 
-function BagBanner() {
-  return (
-    <div className="mb-6 p-4 rounded-lg border border-red-200 bg-red-50 text-red-800 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-300 shadow-sm ring-1 ring-red-100 dark:ring-red-900/40">
-      <h3 className="font-bold text-lg leading-tight mb-1 tracking-wide uppercase">
-        УВЕДОМЛЕНИЕ
-      </h3>
-      <p className="text-sm font-medium">
-        В MiniApp в VK могут некорректно работать разделы приложения!
-      </p>
-    </div>
-  );
-}
 // 👇 ЭТА ФУНКЦИЯ БАННЕРА ДОБАВЛЕНА ПРЯМО СЮДА (не нужен отдельный файл) 👇
 function OpenEduBanner() {
   return (
     <div className="mb-6 p-4 rounded-lg border border-green-200 bg-green-50 text-green-800 dark:border-green-900/30 dark:bg-green-950/20 dark:text-green-300 shadow-sm ring-1 ring-green-100 dark:ring-green-900/40">
       <h3 className="font-bold text-lg leading-tight mb-1 tracking-wide uppercase">
-        САЙТ OPENEDU.RU СНОВА ДОСТУПЕН
+        ОБНОВЛЕНИЕ НА СЛЕДУЮЩИЙ МЕСЯЦ
       </h3>
       <p className="text-sm font-medium">
-        Дедлайны по предмету "Онлайн-курс "Технологическое лидерство"" будут обновлены в ближайшее время.
+        Обновление на ноябрь будет 01.11 до 12:00
       </p>
     </div>
   );
@@ -45,7 +33,7 @@ const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
 export default function Schedule() {
   // 👇 ПЕРЕМЕННАЯ ДЛЯ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ БАННЕРА
-  const showAlert = false; // Поставь false, чтобы скрыть баннер, а true, чтобы включить баннер
+  const showAlert = true; // Поставь false, чтобы скрыть баннер, а true, чтобы включить баннер
   // 👆
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
