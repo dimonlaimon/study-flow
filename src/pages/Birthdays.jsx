@@ -2,9 +2,7 @@ import React from 'react';
 import { Cake } from 'lucide-react';
 
 const birthdays = [
-  { name: 'Синегин Руслан', date: '07.10' },
-  { name: 'Шалгинов Никита', date: '12.10' },
-  { name: 'Морозовский Роман', date: '23.10' },
+  { name: 'Фамилия Имя', date: '00.00' },
 ];
 
 export default function Birthdays() {
@@ -12,7 +10,7 @@ export default function Birthdays() {
     <div className="space-y-5">
       <div>
         <h1 className="text-lg font-bold tracking-tight">Наши именинники</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">Именинники месяца (сентябрь)</p>
+        <p className="text-xs text-muted-foreground mt-0.5">Именинники месяца (ноябрь)</p>
       </div>
 
       <div className="space-y-2.5">
