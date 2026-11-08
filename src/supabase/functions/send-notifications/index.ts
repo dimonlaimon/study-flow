@@ -1,10 +1,10 @@
 // Supabase Edge Function: send-notifications
 // Запускается pg_cron каждый день в 9:30 мск (06:30 UTC).
-// Берёт дедлайны, которые наступают в ближайшие 2 дня, и отправляет
-// уведомления в ЛС VK от имени сообщества и в Telegram-бот.
-// Журнал notifications_sent гарантирует: каждый пользователь получает
-// каждое уведомление ОДИН раз — включая тех, кто включил уведомления
-// позже или дедлайн добавили позже (досылка на следующем запуске).
+// Берёт дедлайны в ближайшие 2 дня и отправляет уведомления в ЛС VK
+// от имени сообщества и в Telegram-бот — ТОЛЬКО тем, у кого включён
+// тумблер уведомлений (vk_notify_enabled / tg_notify_enabled).
+// В журнал notifications_sent попадают только УСПЕШНО доставленные
+// сообщения — недоставленные досылаются на следующем запуске.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -45,10 +45,12 @@ function buildMessage(d: any, now: Date): string {
   return msg;
 }
 
-async function sendVK(userId: string, message: string) {
-  if (!VK_COMMUNITY_TOKEN) return;
+// Возвращает true, только если VK API подтвердил доставку.
+// (например, ошибка 901 — пользователь запретил сообщения от сообщества)
+async function sendVK(userId: string, message: string): Promise<boolean> {
+  if (!VK_COMMUNITY_TOKEN) return false;
   try {
-    await fetch("https://api.vk.com/method/messages.send", {
+    const res = await fetch("https://api.vk.com/method/messages.send", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -59,21 +61,37 @@ async function sendVK(userId: string, message: string) {
         v: "5.199",
       }),
     });
+    const json = await res.json();
+    if (json?.error) {
+      console.error(`VK error ${json.error.error_code} for user ${userId}:`, json.error.error_msg);
+      return false;
+    }
+    return true;
   } catch (e) {
-    console.error("VK error:", e);
+    console.error("VK network error:", e);
+    return false;
   }
 }
 
-async function sendTG(chatId: string, message: string) {
-  if (!TG_BOT_TOKEN) return;
+// Возвращает true, только если Telegram API подтвердил доставку
+// (403 — пользователь не запустил бота).
+async function sendTG(chatId: string, message: string): Promise<boolean> {
+  if (!TG_BOT_TOKEN) return false;
   try {
-    await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chat_id: chatId, text: message }),
     });
+    const json = await res.json();
+    if (!json?.ok) {
+      console.error(`TG error for chat ${chatId}:`, json?.description || "unknown");
+      return false;
+    }
+    return true;
   } catch (e) {
-    console.error("TG error:", e);
+    console.error("TG network error:", e);
+    return false;
   }
 }
 
@@ -126,7 +144,8 @@ Deno.serve(async () => {
       for (const u of vkUsers || []) {
         const key = `${d.id}-${u.id}-vk`;
         if (sentSet.has(key)) continue;
-        await sendVK(u.vk_id, msg);
+        const ok = await sendVK(u.vk_id, msg);
+        if (!ok) continue; // не доставлено — попробуем на следующем запуске
         newRecords.push({ deadline_id: d.id, profile_id: u.id, platform: "vk" });
         sent++;
       }
@@ -134,7 +153,8 @@ Deno.serve(async () => {
       for (const u of tgUsers || []) {
         const key = `${d.id}-${u.id}-telegram`;
         if (sentSet.has(key)) continue;
-        await sendTG(u.telegram_id, msg);
+        const ok = await sendTG(u.telegram_id, msg);
+        if (!ok) continue;
         newRecords.push({ deadline_id: d.id, profile_id: u.id, platform: "telegram" });
         sent++;
       }
