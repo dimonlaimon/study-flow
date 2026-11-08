@@ -212,23 +212,25 @@ export default function SettingsTab({ user }) {
       <div className="rounded-xl border bg-white p-5 space-y-2.5">
         <p className="text-sm font-semibold mb-1">Сообщить об ошибках</p>
 
-        <button
-          type="button"
-          onClick={() => openExternal(VK_SUPPORT_LINK)}
+        <a
+          href={VK_SUPPORT_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-left"
         >
           <MessageCircle className="w-5 h-5 text-primary shrink-0" />
           <span className="text-sm font-medium">Сообщить об ошибках бота и приложения в ВК</span>
-        </button>
+        </a>
 
-        <button
-          type="button"
-          onClick={() => openExternal(TG_SUPPORT_LINK)}
+        <a
+          href={TG_SUPPORT_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-left"
         >
           <Send className="w-5 h-5 text-primary shrink-0" />
-          <span className="text-sm font-medium">Сообщить об ошибках бота и приложения в ТГ</span>
-        </button>
+          <span className="text-sm font-medium">Сообщить об ошибке бота и приложения в ТГ</span>
+        </a>
       </div>
 
       <button
