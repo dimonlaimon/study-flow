@@ -1,7 +1,7 @@
--- ============================================
---  Study Flow — настройка базы Supabase
---  Скопируйте и выполните в Supabase SQL Editor
--- ============================================
+-- Study Flow — настройка базы Supabase
+-- Скопируйте и выполните в Supabase SQL Editor
+
+-- ------------
 
 do $$
 begin
@@ -10,7 +10,9 @@ begin
     where table_schema = 'public' and table_name = 'profiles'
   ) and not exists (
     select 1 from information_schema.columns
-    where table_schema = 'public' and table_name = 'profiles' and column_name = 'telegram_id'
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'telegram_id'
   ) then
     alter table public.profiles drop constraint if exists profiles_pkey;
     alter table public.profiles add column if not exists id bigint generated always as identity primary key;
@@ -42,10 +44,13 @@ drop policy if exists "profiles_read" on public.profiles;
 create policy "profiles_read" on public.profiles for select using (true);
 
 drop policy if exists "profiles_upsert" on public.profiles;
-create policy "profiles_upsert" on public.profiles for insert with check (true);
+create policy "profiles_upsert" on public.profiles for insert
+  with check (vk_id is not null or telegram_id is not null);
 
 drop policy if exists "profiles_update" on public.profiles;
-create policy "profiles_update" on public.profiles for update using (true);
+create policy "profiles_update" on public.profiles for update
+  using (vk_id is not null or telegram_id is not null)
+  with check (vk_id is not null or telegram_id is not null);
 
 create table if not exists public.deadlines (
   id bigint generated always as identity primary key,
@@ -65,13 +70,16 @@ drop policy if exists "deadlines_read" on public.deadlines;
 create policy "deadlines_read" on public.deadlines for select using (true);
 
 drop policy if exists "deadlines_insert" on public.deadlines;
-create policy "deadlines_insert" on public.deadlines for insert with check (true);
+create policy "deadlines_insert" on public.deadlines for insert
+  with check (created_by_id is not null);
 
 drop policy if exists "deadlines_update" on public.deadlines;
-create policy "deadlines_update" on public.deadlines for update using (true);
+create policy "deadlines_update" on public.deadlines for update
+  using (created_by_id is not null);
 
 drop policy if exists "deadlines_delete" on public.deadlines;
-create policy "deadlines_delete" on public.deadlines for delete using (true);
+create policy "deadlines_delete" on public.deadlines for delete
+  using (created_by_id is not null);
 
 -- ЖУРНАЛ ОТПРАВЛЕННЫХ УВЕДОМЛЕНИЙ
 create table if not exists public.notifications_sent (
@@ -85,11 +93,10 @@ create table if not exists public.notifications_sent (
 
 alter table public.notifications_sent enable row level security;
 
+-- Клиенту журнал нужен только на чтение: вставку и удаление делает
+-- edge-функция через service role, ей RLS не мешает.
 drop policy if exists "notifications_sent_read" on public.notifications_sent;
 create policy "notifications_sent_read" on public.notifications_sent for select using (true);
 
 drop policy if exists "notifications_sent_insert" on public.notifications_sent;
-create policy "notifications_sent_insert" on public.notifications_sent for insert with check (true);
-
 drop policy if exists "notifications_sent_delete" on public.notifications_sent;
-create policy "notifications_sent_delete" on public.notifications_sent for delete using (true);
