@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Switch } from '@/components/ui/switch';
 import vkBridge from '@vkontakte/vk-bridge';
 
-// Вставьте сюда свои ссылки на поддержку
+// Ссылки на поддержку
 const VK_SUPPORT_LINK = 'https://vk.ru/dimka050707';
 const TG_SUPPORT_LINK = 'https://t.me/dimkalemon';
 
@@ -29,16 +29,23 @@ const platformLabel = {
 };
 
 // Открывает внешнюю ссылку из мини-приложения.
-// В Telegram webview обычные <a target="_blank"> часто не срабатывают —
-// используем официальный openLink. На десктопе VK приложение живёт в iframe,
-// где переходы могут блокироваться — поэтому window.open с запасным вариантом.
+// В Telegram — официальный openLink из SDK.
+// В VK (особенно на десктопе) window.open из iframe блокируется
+// как поп-ап, поэтому создаём ссылку и кликаем по ней программно —
+// это пользовательская навигация, её блокировщики не режут.
 function openExternal(url) {
   if (window.Telegram?.WebApp?.openLink) {
     window.Telegram.WebApp.openLink(url);
     return;
   }
-  const win = window.open(url, '_blank', 'noopener');
-  if (!win) window.location.href = url;
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 export default function SettingsTab({ user }) {
