@@ -1,7 +1,10 @@
 // Supabase Edge Function: send-notifications
-// Проверяет дедлайны (за 2 дня и ближе) и отправляет уведомления в ВК и Telegram.
-// Ведёт журнал отправленных уведомлений — если пользователь включил уведомления
-// позже других, он получит пропущенное сообщение на следующем запуске.
+// Запускается pg_cron каждый день в 9:30 мск (06:30 UTC).
+// Берёт дедлайны, которые наступают в ближайшие 2 дня, и отправляет
+// уведомления в ЛС VK от имени сообщества и в Telegram-бот.
+// Журнал notifications_sent гарантирует: каждый пользователь получает
+// каждое уведомление ОДИН раз — включая тех, кто включил уведомления
+// позже или дедлайн добавили позже (досылка на следующем запуске).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -31,15 +34,14 @@ function buildMessage(d: any, now: Date): string {
   const due = new Date(d.due_date);
   const relative = getRelativeTime(due, now);
 
-  let msg = `⏰ Дедлайн ${relative}!\n\n📝 ${d.title}`;
+  let msg = `⏰ Дедлайн ${relative}!\n\n📋 ${d.title}`;
   if (d.subject) msg += `\n📚 ${d.subject}`;
   if (d.description) msg += `\n\n${d.description}`;
 
   const dateStr = due.toLocaleString("ru-RU", {
     day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
   });
-  msg += `\n\n📅 Срок: ${dateStr}`;
-
+  msg += `\n\n🕐 Срок: ${dateStr}`;
   return msg;
 }
 
@@ -87,6 +89,7 @@ Deno.serve(async () => {
       .lte("due_date", inTwoDays.toISOString());
 
     if (dErr) throw dErr;
+
     if (!deadlines?.length) {
       return new Response(JSON.stringify({ message: "Нет дедлайнов для уведомления" }));
     }
@@ -104,6 +107,7 @@ Deno.serve(async () => {
       .not("telegram_id", "is", null);
 
     const deadlineIds = deadlines.map((d) => d.id);
+
     const { data: sentRecords } = await supabase
       .from("notifications_sent")
       .select("deadline_id, profile_id, platform")
@@ -136,8 +140,12 @@ Deno.serve(async () => {
       }
     }
 
+    // on conflict do nothing: повторный запуск или гонка не сломают вставку
     if (newRecords.length > 0) {
-      await supabase.from("notifications_sent").insert(newRecords);
+      const { error: insErr } = await supabase
+        .from("notifications_sent")
+        .upsert(newRecords, { onConflict: "deadline_id,profile_id,platform", ignoreDuplicates: true });
+      if (insErr) console.error("journal insert error:", insErr.message);
     }
 
     return new Response(JSON.stringify({
