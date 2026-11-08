@@ -10,7 +10,7 @@ import vkBridge from '@vkontakte/vk-bridge';
 const VK_SUPPORT_LINK = 'https://vk.ru/dimka050707';
 const TG_SUPPORT_LINK = 'https://t.me/dimkalemon';
 
-// ID сообщества ВК (dedlinebot) — замените на числовой ID группы
+// ID сообщества VK (dedlinebot)
 const VK_COMMUNITY_ID = 236945646;
 
 // Ссылка на Telegram-бота
@@ -19,25 +19,41 @@ const TG_BOT_LINK = 'https://t.me/dedline_edu_bot';
 const roleName = {
   admin: 'Администратор',
   starosta: 'Староста',
-  user: 'Студент'
+  user: 'Студент',
 };
 
 const platformLabel = {
   vk: 'ВКонтакте',
   telegram: 'Telegram',
-  preview: 'режим предпросмотра'
+  preview: 'режим предпросмотра',
 };
+
+// Открывает внешнюю ссылку из мини-приложения.
+// В Telegram webview обычные <a target="_blank"> часто не срабатывают —
+// используем официальный openLink. На десктопе VK приложение живёт в iframe,
+// где переходы могут блокироваться — поэтому window.open с запасным вариантом.
+function openExternal(url) {
+  if (window.Telegram?.WebApp?.openLink) {
+    window.Telegram.WebApp.openLink(url);
+    return;
+  }
+  const win = window.open(url, '_blank', 'noopener');
+  if (!win) window.location.href = url;
+}
 
 export default function SettingsTab({ user }) {
   const { toast } = useToast();
   const { platform } = usePlatformAuth();
+
   const [vkNotify, setVkNotify] = useState(false);
   const [tgNotify, setTgNotify] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
+
     const column = platform === 'telegram' ? 'telegram_id' : 'vk_id';
+
     supabase
       .from('profiles')
       .select('vk_notify_enabled, tg_notify_enabled')
@@ -58,11 +74,14 @@ export default function SettingsTab({ user }) {
       if (!vkNotify && VK_COMMUNITY_ID) {
         await vkBridge.send('VKWebAppAllowMessagesFromGroup', { group_id: VK_COMMUNITY_ID });
       }
+
       const { error } = await supabase
         .from('profiles')
         .update({ vk_notify_enabled: !vkNotify })
         .eq('vk_id', user.id);
+
       if (error) throw error;
+
       setVkNotify(!vkNotify);
       toast({ title: !vkNotify ? 'Уведомления ВК включены' : 'Уведомления ВК выключены' });
     } catch (e) {
@@ -80,7 +99,9 @@ export default function SettingsTab({ user }) {
         .from('profiles')
         .update({ tg_notify_enabled: !tgNotify })
         .eq('telegram_id', user.id);
+
       if (error) throw error;
+
       setTgNotify(!tgNotify);
       toast({
         title: !tgNotify ? 'Уведомления Telegram включены' : 'Уведомления Telegram выключены',
@@ -108,72 +129,68 @@ export default function SettingsTab({ user }) {
           )}
           <div>
             <p className="font-semibold text-sm">{user?.full_name || 'Пользователь'}</p>
-            <p className="text-xs text-muted-foreground">Вход через {platformLabel[user?.platform] || 'ВКонтакте'}</p>
+            <p className="text-xs text-muted-foreground">
+              Вход через {platformLabel[user?.platform] || 'ВКонтакте'}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary">
-          <GraduationCap className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs font-medium">
-            Роль: {roleName[user?.role] || 'Студент'}
-          </span>
+        {/* Этот блок восстановлен по смыслу — в PDF он не читался.
+            Поправьте оформление, если в оригинале он выглядел иначе. */}
+        <div className="flex items-center gap-2 pt-1 border-t">
+          <GraduationCap className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium">{roleName[user?.role] || 'Студент'}</span>
         </div>
       </div>
 
-      <div className="relative rounded-xl border bg-white p-5 space-y-4">
-        {user?.role !== 'admin' && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60 backdrop-blur-sm">
-            <p className="text-sm font-semibold text-muted-foreground text-center px-4">Рассылки находятся в разработке</p>
+      <div className="rounded-xl border bg-white p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Bell className="w-4 h-4 text-primary" />
+          <p className="text-sm font-semibold">Уведомления о дедлайнах</p>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">ВКонтакте</p>
+            {platform !== 'vk' && (
+              <p className="text-xs text-muted-foreground">Войдите через ВК, чтобы включить</p>
+            )}
+          </div>
+          <Switch
+            checked={vkNotify}
+            onCheckedChange={toggleVk}
+            disabled={platform !== 'vk' || busy}
+          />
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Telegram</p>
+            {platform === 'telegram' && !tgNotify && (
+              <button
+                type="button"
+                onClick={() => openExternal(TG_BOT_LINK)}
+                className="text-xs text-primary inline-flex items-center gap-0.5"
+              >
+                Сначала запустите бота <ExternalLink className="w-3 h-3" />
+              </button>
+            )}
+            {platform !== 'telegram' && (
+              <p className="text-xs text-muted-foreground">Войдите через Telegram, чтобы включить</p>
+            )}
+          </div>
+          <Switch
+            checked={tgNotify}
+            onCheckedChange={toggleTg}
+            disabled={platform !== 'telegram' || busy}
+          />
+        </div>
+
+        {busy && (
+          <div className="flex justify-center">
+            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
           </div>
         )}
-        <div className={user?.role !== 'admin' ? 'pointer-events-none select-none blur-sm' : ''}>
-          <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-primary" />
-            <p className="text-sm font-semibold">Уведомления о дедлайнах</p>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Сообщения приходят за 2 дня до дедлайна от имени сообщества ВК или бота Telegram.
-          </p>
-
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">ВКонтакте</p>
-              {platform !== 'vk' && (
-                <p className="text-xs text-muted-foreground">Войдите через ВК, чтобы включить</p>
-              )}
-            </div>
-            <Switch
-              checked={vkNotify}
-              onCheckedChange={toggleVk}
-              disabled={platform !== 'vk' || busy}
-            />
-          </div>
-
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">Telegram</p>
-              {platform === 'telegram' && !tgNotify && (
-                <a href__={TG_BOT_LINK} target="_blank" rel="noopener noreferrer" className="text-xs text-primary inline-flex items-center gap-0.5">
-                  Сначала запустите бота <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-              {platform !== 'telegram' && (
-                <p className="text-xs text-muted-foreground">Войдите через Telegram, чтобы включить</p>
-              )}
-            </div>
-            <Switch
-              checked={tgNotify}
-              onCheckedChange={toggleTg}
-              disabled={platform !== 'telegram' || busy}
-            />
-          </div>
-
-          {busy && (
-            <div className="flex justify-center">
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-            </div>
-          )}
-        </div>
       </div>
 
       <div className="rounded-xl border bg-white p-5">
@@ -187,24 +204,24 @@ export default function SettingsTab({ user }) {
 
       <div className="rounded-xl border bg-white p-5 space-y-2.5">
         <p className="text-sm font-semibold mb-1">Сообщить об ошибках</p>
-        <a
-          href__={VK_SUPPORT_LINK}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+
+        <button
+          type="button"
+          onClick={() => openExternal(VK_SUPPORT_LINK)}
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-left"
         >
           <MessageCircle className="w-5 h-5 text-primary shrink-0" />
           <span className="text-sm font-medium">Сообщить об ошибках бота и приложения в ВК</span>
-        </a>
-        <a
-          href__={TG_SUPPORT_LINK}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+        </button>
+
+        <button
+          type="button"
+          onClick={() => openExternal(TG_SUPPORT_LINK)}
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-left"
         >
           <Send className="w-5 h-5 text-primary shrink-0" />
           <span className="text-sm font-medium">Сообщить об ошибках бота и приложения в ТГ</span>
-        </a>
+        </button>
       </div>
 
       <button
