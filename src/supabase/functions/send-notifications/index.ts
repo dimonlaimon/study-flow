@@ -3,6 +3,9 @@
 // Берёт дедлайны в ближайшие 2 дня и отправляет уведомления в ЛС VK
 // от имени сообщества и в Telegram-бот — ТОЛЬКО тем, у кого включён
 // тумблер уведомлений (vk_notify_enabled / tg_notify_enabled).
+// Все дедлайны одного запуска объединяются в ОДНО сообщение.
+// Время в сообщениях всегда московское, «сегодня/завтра/послезавтра»
+// считаются по календарным датам мск, а не по количеству часов.
 // В журнал notifications_sent попадают только УСПЕШНО доставленные
 // сообщения — недоставленные досылаются на следующем запуске.
 
@@ -16,37 +19,83 @@ const supabase = createClient(
 const VK_COMMUNITY_TOKEN = Deno.env.get("VK_COMMUNITY_TOKEN") || "";
 const TG_BOT_TOKEN = Deno.env.get("TG_BOT_TOKEN") || "";
 
-function dayWord(n: number): string {
-  if (n === 1) return "день";
-  if (n >= 2 && n <= 4) return "дня";
-  return "дней";
+// Календарная дата в мск в виде частей (год, месяц, день)
+function moscowParts(d: Date): { y: number; m: number; day: number } {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Moscow",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const get = (type: string) =>
+    Number(parts.find((p) => p.type === type)?.value);
+  return { y: get("year"), m: get("month"), day: get("day") };
+}
+
+// Сколько календарных суток мск между двумя моментами
+function calendarDayDiff(from: Date, to: Date): number {
+  const a = moscowParts(from);
+  const b = moscowParts(to);
+  const aDays = Date.UTC(a.y, a.m - 1, a.day);
+  const bDays = Date.UTC(b.y, b.m - 1, b.day);
+  return Math.round((bDays - aDays) / (24 * 60 * 60 * 1000));
 }
 
 function getRelativeTime(dueDate: Date, now: Date): string {
-  const diffMs = dueDate.getTime() - now.getTime();
-  const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+  const diffDays = calendarDayDiff(now, dueDate);
   if (diffDays <= 0) return "сегодня";
   if (diffDays === 1) return "завтра";
-  return `через ${diffDays} ${dayWord(diffDays)}`;
+  if (diffDays === 2) return "послезавтра";
+  return `через ${diffDays} дней`;
 }
 
-function buildMessage(d: any, now: Date): string {
+function deadlineWord(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "дедлайн";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "дедлайна";
+  return "дедлайнов";
+}
+
+function formatDue(dueDate: Date): string {
+  // Сервер работает в UTC, пользователю нужен мск — зона указана явно
+  return dueDate.toLocaleString("ru-RU", {
+    timeZone: "Europe/Moscow",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+// Одна строка в общем списке дедлайнов
+function buildDeadlineLine(d: any, now: Date): string {
   const due = new Date(d.due_date);
   const relative = getRelativeTime(due, now);
 
-  let msg = `⏰ Дедлайн ${relative}!\n\n📋 ${d.title}`;
-  if (d.subject) msg += `\n📚 ${d.subject}`;
-  if (d.description) msg += `\n\n${d.description}`;
-
-  const dateStr = due.toLocaleString("ru-RU", {
-    day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
-  });
-  msg += `\n\n🕐 Срок: ${dateStr}`;
-  return msg;
+  let line = `⏰ ${relative} — 📋 ${d.title}`;
+  if (d.subject) line += ` (${d.subject})`;
+  if (d.description) line += `\n   ${d.description}`;
+  line += `\n   🕐 Срок: ${formatDue(due)}`;
+  return line;
 }
 
-// Возвращает true, только если VK API подтвердил доставку.
-// (например, ошибка 901 — пользователь запретил сообщения от сообщества)
+// Общее сообщение: все дедлайны одним списком, ближайший сверху
+function buildMessage(deadlines: any[], now: Date): string {
+  const header = deadlines.length === 1
+    ? "🔔 Напоминание о дедлайне:"
+    : `🔔 Напоминание: ${deadlines.length} ${deadlineWord(deadlines.length)} впереди!`;
+
+  const lines = deadlines
+    .slice()
+    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+    .map((d) => buildDeadlineLine(d, now));
+
+  return `${header}\n\n${lines.join("\n\n")}`;
+}
+
+// Возвращает true, только если VK API подтвердил доставку
+// (например, ошибка 901 — пользователь запретил сообщения от сообщества).
 async function sendVK(userId: string, message: string): Promise<boolean> {
   if (!VK_COMMUNITY_TOKEN) return false;
   try {
@@ -138,33 +187,39 @@ Deno.serve(async () => {
     let sent = 0;
     const newRecords: any[] = [];
 
-    for (const d of deadlines) {
-      const msg = buildMessage(d, now);
+    // Отправляет пользователю только НЕ отправленные ему дедлайны одним сообщением
+    async function notify(
+      platform: string,
+      users: any[] | null,
+      send: (id: string, msg: string) => Promise<boolean>
+    ) {
+      for (const u of users || []) {
+        const fresh = deadlines.filter(
+          (d) => !sentSet.has(`${d.id}-${u.id}-${platform}`)
+        );
+        if (fresh.length === 0) continue; // всё уже отправлено — не беспокоим
 
-      for (const u of vkUsers || []) {
-        const key = `${d.id}-${u.id}-vk`;
-        if (sentSet.has(key)) continue;
-        const ok = await sendVK(u.vk_id, msg);
+        const msg = buildMessage(fresh, now);
+        const ok = await send(u.vk_id ?? u.telegram_id, msg);
         if (!ok) continue; // не доставлено — попробуем на следующем запуске
-        newRecords.push({ deadline_id: d.id, profile_id: u.id, platform: "vk" });
-        sent++;
-      }
 
-      for (const u of tgUsers || []) {
-        const key = `${d.id}-${u.id}-telegram`;
-        if (sentSet.has(key)) continue;
-        const ok = await sendTG(u.telegram_id, msg);
-        if (!ok) continue;
-        newRecords.push({ deadline_id: d.id, profile_id: u.id, platform: "telegram" });
-        sent++;
+        for (const d of fresh) {
+          newRecords.push({ deadline_id: d.id, profile_id: u.id, platform });
+          sent++;
+        }
       }
     }
 
-    // on conflict do nothing: повторный запуск или гонка не сломают вставку
+    await notify("vk", vkUsers, (id, msg) => sendVK(id, msg));
+    await notify("telegram", tgUsers, (id, msg) => sendTG(id, msg));
+
     if (newRecords.length > 0) {
       const { error: insErr } = await supabase
         .from("notifications_sent")
-        .upsert(newRecords, { onConflict: "deadline_id,profile_id,platform", ignoreDuplicates: true });
+        .upsert(newRecords, {
+          onConflict: "deadline_id,profile_id,platform",
+          ignoreDuplicates: true,
+        });
       if (insErr) console.error("journal insert error:", insErr.message);
     }
 
